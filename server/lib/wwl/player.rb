@@ -1,15 +1,11 @@
 require 'rubygems'
 require 'constructor'
-require 'letter_generator'
 
 class Player
   TRAY_SIZE = 7
 
   constructor :name, :letter_tray, :score, :letter_generator,
-              :accessors => true do
-    @score = 0
-    @letter_tray = Array.new
-  end
+              :accessors => true
 
   # returns the letters the player currently has
   def letters

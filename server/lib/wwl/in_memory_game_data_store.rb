@@ -1,13 +1,17 @@
-require 'game'
 
 class InMemoryGameDataStore
-  @games = Hash.new
+
+  def initialize
+    @games = Hash.new
+    @log = WwlLogger.logger
+  end
 
   # add a game to the data store, returns true if successful, false otherwise
   def add(game)
     verify_arg_type! game
     return false if @games.has_key? game.name
 
+    @log.info "Adding game: #{game.name}"
     @games[game.name] = game
     true
   end
