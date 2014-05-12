@@ -13,7 +13,7 @@ require 'wwl/tile_multiplier'
 require 'wwl/wwl_logger'
 
 class WwlAPI < Grape::API
-  VERSION = '0.1.2'
+  VERSION = '0.2.1'
 
   prefix 'wwl'
   format :json
@@ -33,11 +33,29 @@ class WwlAPI < Grape::API
     def game_service
       GameService.instance
     end
+
+    # internal server error
+    def unexpected_error!(err)
+      logger.warn "Unexpected error: #{err}\n\t#{err.backtrace.join "\n\t"}"
+      error!('Unknown error', 500)
+    end
   end
 
   resource :game do
-    get ':id' do
-      {:id => params[:id], :details => 'potato'}.to_json
+    get ':id/player/:player_name' do
+      begin
+        game_json = game_service.get_game(
+            :name => params[:id],
+            :player_name => params[:player_name])
+
+        if game_json.nil?
+          error!('Game not found', 404)
+        else
+          game_json
+        end
+      rescue => err
+        unexpected_error! err
+      end
     end
 
     params do
@@ -52,9 +70,7 @@ class WwlAPI < Grape::API
       rescue ErrorMessage => em
         error!(em.message, em.http_code)
       rescue => err
-        logger.warn 'Unexpected error'
-        logger.warn "#{err}\n\t#{err.backtrace.join "\n\t"}"
-        error!('Unknown error', 500)
+        unexpected_error! err
       end
       nil
     end

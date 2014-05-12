@@ -58,9 +58,9 @@ class GameService
     game = @data_store.get options[:name]
 
     (not game.nil? and
-        (game.player1.eql? options[:player_name] or
-            game.player2.eql? options[:player_name])) ?
-        game :
+        (game.player1.name.eql? options[:player_name] or
+            game.player2.name.eql? options[:player_name])) ?
+        game_json(game, options[:player_name]) :
         nil
   end
 
@@ -71,5 +71,13 @@ class GameService
   def validate_game_name!(name)
     raise ErrorMessage.new(400), 'Game name invalid' if name.to_s.index(/^\w{1,16}$/).nil?
     raise ErrorMessage.new(409), 'Game name already exists' unless @data_store.get(name).nil?
+  end
+
+  # takes a game object and converts it to json for the specified player
+  def game_json(game, player_name)
+    player = game.player1.name.eql?(player_name) ? game.player1 : game.player2
+
+    {:game => game.board.tiles.to_a,
+    :letters => player.letters}.to_json
   end
 end
